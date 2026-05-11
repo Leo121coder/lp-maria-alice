@@ -9,6 +9,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { usePayment } from '../hooks/usePayment';
 import type { DonorInfo } from '../gateways';
+import { QRCodeSVG } from 'qrcode.react';
 
 interface PixModalProps {
   isOpen: boolean;
@@ -16,7 +17,6 @@ interface PixModalProps {
   onClose: () => void;
 }
 
-/** Formata segundos em MM:SS */
 function formatTime(secs: number): string {
   const m = Math.floor(secs / 60);
   const s = secs % 60;
@@ -81,10 +81,6 @@ export function PixModal({ isOpen, amount, onClose }: PixModalProps) {
 
   if (!isOpen) return null;
 
-  // Gerador de QR Code nativo usando o pixCode (Fallback Infalível)
-  const qrCodeUrl = pixData?.pixQrCodeUrl 
-    || (pixData?.pixCode ? `https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=1&data=${encodeURIComponent(pixData.pixCode)}` : null);
-
   return (
     <div className="modal-overlay" onClick={handleClose} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)', position: 'fixed', inset: 0, zIndex: 99999 }}>
       <div 
@@ -127,10 +123,23 @@ export function PixModal({ isOpen, amount, onClose }: PixModalProps) {
         </p>
 
         {status === 'loading' && (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '30px 0' }}>
-            <div className="pix-spinner" style={{ width: '40px', height: '40px', border: '4px solid #f3f3f3', borderTop: '4px solid #24CA68', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-            <span style={{ marginTop: '16px', color: '#495057', fontWeight: '600' }}>Gerando código PIX Seguro...</span>
-            <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
+          <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', animation: 'fadeIn 0.5s ease' }}>
+            <div style={{ background: '#f8f9fa', padding: '8px 16px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px', border: '1px solid #e9ecef', opacity: 0.5 }}>
+              <span style={{ fontSize: '18px' }}>⏱</span>
+              <span style={{ fontSize: '14px', color: '#495057', fontWeight: '600' }}>Gerando...</span>
+            </div>
+            
+            <div style={{ background: 'white', padding: '16px', borderRadius: '24px', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.05), 0 0 0 4px rgba(36,202,104,0.1)', marginBottom: '24px', display: 'flex', justifyContent: 'center', alignItems: 'center', width: '232px', height: '232px' }}>
+              <div style={{ width: '40px', height: '40px', border: '4px solid #f3f3f3', borderTop: '4px solid #24CA68', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+            </div>
+
+            <div style={{ width: '100%' }}>
+              <p style={{ margin: '0 0 8px', fontSize: '14px', color: '#495057', fontWeight: '600', textAlign: 'left', opacity: 0.5 }}>Código Copia e Cola:</p>
+              <div style={{ display: 'flex', background: '#f1f3f5', borderRadius: '12px', padding: '4px', border: '1px solid #dee2e6', height: '50px', alignItems: 'center', overflow: 'hidden' }}>
+                 <div style={{ width: '100%', height: '10px', background: '#e9ecef', borderRadius: '10px', margin: '0 15px', animation: 'pulse 1.5s infinite' }}></div>
+              </div>
+            </div>
+            <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } } @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 0.3; } 100% { opacity: 0.6; } }`}</style>
           </div>
         )}
 
@@ -146,7 +155,7 @@ export function PixModal({ isOpen, amount, onClose }: PixModalProps) {
           </div>
         )}
 
-        {(status === 'ready' || status === 'polling') && pixData && qrCodeUrl && (
+        {(status === 'ready' || status === 'polling') && pixData && (
           <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', animation: 'fadeIn 0.5s ease' }}>
             
             <div style={{ background: '#f8f9fa', padding: '8px 16px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px', border: '1px solid #e9ecef' }}>
@@ -154,12 +163,14 @@ export function PixModal({ isOpen, amount, onClose }: PixModalProps) {
               <span style={{ fontSize: '14px', color: '#495057', fontWeight: '600' }}>Expira em <strong style={{ color: '#e03131' }}>{formatTime(timeLeft)}</strong></span>
             </div>
 
-            <div style={{ background: 'white', padding: '16px', borderRadius: '24px', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.05), 0 0 0 4px rgba(36,202,104,0.1)', marginBottom: '24px', display: 'flex', justifyContent: 'center' }}>
-              <img
-                src={qrCodeUrl}
-                alt="QR Code PIX"
-                style={{ width: '200px', height: '200px', objectFit: 'contain', display: 'block' }}
-                onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.parentElement!.innerHTML = '<p style="color:#e03131; font-weight:bold; padding:40px;">Falha ao carregar QRCode. Use o Copia e Cola abaixo.</p>'; }}
+            <div style={{ background: 'white', padding: '16px', borderRadius: '24px', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.05), 0 0 0 4px rgba(36,202,104,0.1)', marginBottom: '24px', display: 'flex', justifyContent: 'center', alignItems: 'center', width: '232px', height: '232px' }}>
+              <QRCodeSVG 
+                value={pixData.pixCode} 
+                size={200} 
+                bgColor="#ffffff"
+                fgColor="#1a1d20"
+                level="M"
+                includeMargin={false}
               />
             </div>
 
