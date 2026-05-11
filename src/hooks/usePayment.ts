@@ -7,14 +7,15 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { createGateway } from '../gateways';
+import { CONFIG } from '../config';
 import type { CreatePixResponse, DonorInfo } from '../gateways';
 
-/** Configuração do gateway ativo — vem do .env */
+/** Configuração do gateway ativo — fonte única: CONFIG.GATEWAY */
 function getActiveGateway() {
-  return createGateway('sagacepay', {
-    name: 'sagacepay',
-    apiKey: import.meta.env.VITE_GATEWAY_API_KEY || '',
-    apiUrl: import.meta.env.VITE_GATEWAY_API_URL || 'https://pixnerva.com.br/api',
+  return createGateway(CONFIG.GATEWAY.name, {
+    name: CONFIG.GATEWAY.name,
+    apiKey: CONFIG.GATEWAY.apiKey,
+    apiUrl: CONFIG.GATEWAY.apiUrl,
   });
 }
 
