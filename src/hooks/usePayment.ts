@@ -58,7 +58,7 @@ export function usePayment(): UsePaymentReturn {
   const isPollingRef = useRef(false);
 
   // Ref para a função de polling (resolve referência circular)
-  const pollFnRef = useRef<() => Promise<void>>();
+  const pollFnRef = useRef<(() => Promise<void>) | undefined>(undefined);
 
   /** Limpa todos os timers */
   const clearTimers = useCallback(() => {
@@ -113,8 +113,8 @@ export function usePayment(): UsePaymentReturn {
           setStatus('paid');
 
           // Meta Pixel — Purchase event
-          if (typeof (window as Record<string, unknown>).fbq === 'function') {
-            (window as Record<string, unknown> & { fbq: (...args: unknown[]) => void }).fbq(
+          if (typeof (window as unknown as Record<string, unknown>).fbq === 'function') {
+            (window as unknown as { fbq: (...args: unknown[]) => void }).fbq(
               'track', 'Purchase', { value: result.amount, currency: 'BRL' }
             );
           }
