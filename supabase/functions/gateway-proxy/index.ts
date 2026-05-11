@@ -22,15 +22,14 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    // Ex: https://.../functions/v1/gateway-proxy/sales
-    // Queremos extrair "/sales" ou "/sales/a1b2..."
     const url = new URL(req.url);
-    const pathRegex = /\/functions\/v1\/gateway-proxy(.*)/;
-    const match = url.pathname.match(pathRegex);
+    
+    // Extrai o que vier APÓS "gateway-proxy" na URL (infalível em qualquer roteador Supabase)
+    const match = url.pathname.match(/gateway-proxy(.*)/);
     const path = match ? match[1] : '';
 
-    if (!path) {
-      return new Response(JSON.stringify({ error: 'Endpoint proxy inválido' }), { 
+    if (!path || path === '/') {
+      return new Response(JSON.stringify({ error: 'Endpoint proxy inválido. Esperado um caminho (ex: /sales).' }), { 
         status: 400, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       });
