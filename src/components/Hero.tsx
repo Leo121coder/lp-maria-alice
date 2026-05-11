@@ -8,7 +8,7 @@ export function Hero() {
       {/* Galeria / Banner */}
       <div className="galeria">
         <img 
-          src="/images/foto banner.png" 
+          src="/images/foto_banner.webp" 
           alt="Maria Alice" 
           fetchPriority="high" 
           loading="eager" 

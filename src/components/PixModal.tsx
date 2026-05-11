@@ -84,7 +84,8 @@ export function PixModal({ isOpen, amount, onClose }: PixModalProps) {
           animation: 'modalSlideUp 0.3s ease-out',
           display: 'flex',
           flexDirection: 'column',
-          overflow: 'hidden'
+          maxHeight: '92vh',
+          overflowY: 'auto'
         }}
       >
         {/* Cabeçalho Verde Escuro com X */}
