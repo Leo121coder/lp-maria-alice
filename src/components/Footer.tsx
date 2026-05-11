@@ -63,13 +63,14 @@ export function Footer() {
               <li><a href="#">Clique aqui para falar conosco</a></li>
             </ul>
             <p className="footer-schedule">De Segunda à Sexta</p>
-            <p className="footer-schedule">Das 9:30 às 17:00</p>
-            <img src={img('selo_seguranca.webp')} alt="Selo de Segurança" className="footer-seal" />
+            <div className="footer-security">
+              <img src={img('selo_seguranca.webp')} alt="Selo de Segurança" className="footer-seal" loading="lazy" decoding="async" />
+            </div>
           </div>
-          <div className="footer-col">
+          <div className="footer-apps">
             <h4>Baixe nosso App</h4>
-            <a href="#"><img src="https://play.google.com/intl/en_us/badges/static/images/badges/pt_badge_web_generic.png" alt="Google Play" className="footer-store-badge" style={{ maxWidth: '140px', marginTop: '-10px' }} /></a>
-            <a href="#"><img src="https://tools.applemediaservices.com/api/badges/download-on-the-app-store/black/pt-br?size=250x83&amp;releaseDate=1276560000&amp;h=7e7b68bf1aa5eb96cb2aca08115651ce" alt="Apple Store" className="footer-store-badge" style={{ maxWidth: '125px', marginTop: '5px', marginLeft: '8px' }} /></a>
+            <a href="#"><img src="https://play.google.com/intl/en_us/badges/static/images/badges/pt_badge_web_generic.png" alt="Google Play" className="footer-store-badge" style={{ maxWidth: '140px', marginTop: '-10px' }} loading="lazy" decoding="async" /></a>
+            <a href="#"><img src="https://tools.applemediaservices.com/api/badges/download-on-the-app-store/black/pt-br?size=250x83&amp;releaseDate=1276560000&amp;h=7e7b68bf1aa5eb96cb2aca08115651ce" alt="Apple Store" className="footer-store-badge" style={{ maxWidth: '125px', marginTop: '5px', marginLeft: '8px' }} loading="lazy" decoding="async" /></a>
           </div>
         </div>
       </div>

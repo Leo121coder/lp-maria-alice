@@ -115,7 +115,7 @@ export function CampaignTabs({ onDonate }: { onDonate: () => void }) {
           <div className="comments-list">
             {COMMENTS.map((c, i) => (
               <div key={i} className="comment-card">
-                <img src={img(c.avatar)} alt={c.name} className="comment-avatar" />
+                <img src={img(c.avatar)} alt={c.name} className="comment-avatar" loading="lazy" decoding="async" />
                 <div className="comment-body">
                   <strong>{c.name}</strong>
                   <p>{c.text}</p>
