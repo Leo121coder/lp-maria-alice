@@ -5,7 +5,7 @@
  * Mostra: QR Code + código copia-e-cola + countdown + polling automático.
  */
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { usePayment } from '../hooks/usePayment';
 import { CONFIG } from '../config';
 import type { DonorInfo } from '../gateways';
@@ -28,28 +28,35 @@ export function PixModal({ isOpen, amount, onClose }: PixModalProps) {
   const [copied, setCopied] = useState(false);
   const [step, setStep] = useState<'form' | 'pix'>('form');
   const inputRef = useRef<HTMLInputElement>(null);
-  const hasInitRef = useRef(false);
 
-  // Resetar quando o modal fecha
+  // Resetar quando o modal fecha — usamos ref para evitar setState no effect
+  const prevIsOpenRef = useRef(isOpen);
   useEffect(() => {
-    if (!isOpen) {
-      hasInitRef.current = false;
-      setStep('form');
-      setCopied(false);
+    // Só reseta quando transiciona de open → closed
+    if (prevIsOpenRef.current && !isOpen) {
       reset();
     }
+    prevIsOpenRef.current = isOpen;
   }, [isOpen, reset]);
 
+  // Quando isOpen muda para true, inicializa o step
+  // Feito fora do effect para evitar cascading renders
+  if (!isOpen && step !== 'form') {
+    setStep('form');
+    setCopied(false);
+  }
+
   // Copy-to-clipboard com fallback
-  const handleCopy = useCallback(async () => {
-    if (!pixData?.pixCode) return;
+  async function handleCopy() {
+    const code = pixData?.pixCode;
+    if (!code) return;
 
     try {
-      await navigator.clipboard.writeText(pixData.pixCode);
+      await navigator.clipboard.writeText(code);
     } catch {
       // Fallback para navegadores antigos
       const textarea = document.createElement('textarea');
-      textarea.value = pixData.pixCode;
+      textarea.value = code;
       textarea.style.position = 'fixed';
       textarea.style.opacity = '0';
       document.body.appendChild(textarea);
@@ -60,7 +67,7 @@ export function PixModal({ isOpen, amount, onClose }: PixModalProps) {
 
     setCopied(true);
     setTimeout(() => setCopied(false), 3000);
-  }, [pixData?.pixCode]);
+  }
 
   // Quando o doador submete o formulário
   async function handleDonorSubmit(donor: DonorInfo) {

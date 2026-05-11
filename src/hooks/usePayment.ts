@@ -7,9 +7,9 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { createGateway } from '../gateways';
-import type { CreatePixResponse, PaymentStatus, DonorInfo } from '../gateways';
+import type { CreatePixResponse, DonorInfo } from '../gateways';
 
-/** Configuração do gateway ativo — vem do .env via config.ts */
+/** Configuração do gateway ativo — vem do .env */
 function getActiveGateway() {
   return createGateway('sagacepay', {
     name: 'sagacepay',
@@ -18,9 +18,11 @@ function getActiveGateway() {
   });
 }
 
+type PaymentStep = 'idle' | 'loading' | 'ready' | 'polling' | 'paid' | 'expired' | 'error';
+
 interface UsePaymentReturn {
   /** Status atual do pagamento */
-  status: 'idle' | 'loading' | 'ready' | 'polling' | 'paid' | 'expired' | 'error';
+  status: PaymentStep;
   /** Dados do PIX gerado */
   pixData: CreatePixResponse | null;
   /** Mensagem de erro, se houver */
@@ -28,7 +30,7 @@ interface UsePaymentReturn {
   /** Tempo restante (segundos) para expiração */
   timeLeft: number;
   /** Gera um novo PIX */
-  createPix: (amount: number, donor: DonorInfo, tracking?: CreatePixResponse['tracking']) => Promise<void>;
+  createPix: (amount: number, donor: DonorInfo, tracking?: Record<string, string>) => Promise<void>;
   /** Para o polling e reseta */
   reset: () => void;
 }
@@ -43,7 +45,7 @@ const POLL_BACKOFF = 1.4;
 const PIX_EXPIRATION_SECS = 1800;
 
 export function usePayment(): UsePaymentReturn {
-  const [status, setStatus] = useState<UsePaymentReturn['status']>('idle');
+  const [status, setStatus] = useState<PaymentStep>('idle');
   const [pixData, setPixData] = useState<CreatePixResponse | null>(null);
   const [errorMessage, setErrorMessage] = useState('');
   const [timeLeft, setTimeLeft] = useState(PIX_EXPIRATION_SECS);
@@ -53,6 +55,9 @@ export function usePayment(): UsePaymentReturn {
   const timerRef = useRef<number | null>(null);
   const saleIdRef = useRef<string>('');
   const isPollingRef = useRef(false);
+
+  // Ref para a função de polling (resolve referência circular)
+  const pollFnRef = useRef<() => Promise<void>>();
 
   /** Limpa todos os timers */
   const clearTimers = useCallback(() => {
@@ -78,45 +83,6 @@ export function usePayment(): UsePaymentReturn {
     saleIdRef.current = '';
   }, [clearTimers]);
 
-  /** Polling com exponential backoff */
-  const pollStatus = useCallback(async () => {
-    if (!isPollingRef.current || !saleIdRef.current) return;
-
-    try {
-      const gateway = getActiveGateway();
-      const result = await gateway.checkStatus(saleIdRef.current);
-
-      if (result.status === 'paid') {
-        clearTimers();
-        setStatus('paid');
-
-        // Meta Pixel — Purchase event no frontend (tracking server-side é feito pelo SagacePay via CAPI)
-        if (typeof (window as Record<string, unknown>).fbq === 'function') {
-          (window as Record<string, unknown> & { fbq: (...args: unknown[]) => void }).fbq(
-            'track', 'Purchase', { value: result.amount, currency: 'BRL' }
-          );
-        }
-        return;
-      }
-
-      if (result.status === 'expired' || result.status === 'failed') {
-        clearTimers();
-        setStatus('expired');
-        return;
-      }
-
-      // Agendar próximo poll com backoff
-      pollIntervalRef.current = Math.min(
-        pollIntervalRef.current * POLL_BACKOFF,
-        POLL_MAX_MS
-      );
-      pollTimeoutRef.current = window.setTimeout(pollStatus, pollIntervalRef.current);
-    } catch {
-      // Em caso de erro de rede, tenta novamente (sem parar)
-      pollTimeoutRef.current = window.setTimeout(pollStatus, pollIntervalRef.current);
-    }
-  }, [clearTimers]);
-
   /** Inicia o countdown timer (30 min) */
   const startCountdown = useCallback(() => {
     setTimeLeft(PIX_EXPIRATION_SECS);
@@ -130,6 +96,53 @@ export function usePayment(): UsePaymentReturn {
         return prev - 1;
       });
     }, 1000);
+  }, [clearTimers]);
+
+  /** Polling com exponential backoff (via ref para evitar dep circular) */
+  useEffect(() => {
+    pollFnRef.current = async () => {
+      if (!isPollingRef.current || !saleIdRef.current) return;
+
+      try {
+        const gateway = getActiveGateway();
+        const result = await gateway.checkStatus(saleIdRef.current);
+
+        if (result.status === 'paid') {
+          clearTimers();
+          setStatus('paid');
+
+          // Meta Pixel — Purchase event
+          if (typeof (window as Record<string, unknown>).fbq === 'function') {
+            (window as Record<string, unknown> & { fbq: (...args: unknown[]) => void }).fbq(
+              'track', 'Purchase', { value: result.amount, currency: 'BRL' }
+            );
+          }
+          return;
+        }
+
+        if (result.status === 'expired' || result.status === 'failed') {
+          clearTimers();
+          setStatus('expired');
+          return;
+        }
+
+        // Agendar próximo poll com backoff
+        pollIntervalRef.current = Math.min(
+          pollIntervalRef.current * POLL_BACKOFF,
+          POLL_MAX_MS
+        );
+        pollTimeoutRef.current = window.setTimeout(
+          () => pollFnRef.current?.(),
+          pollIntervalRef.current
+        );
+      } catch {
+        // Erro de rede — tenta novamente
+        pollTimeoutRef.current = window.setTimeout(
+          () => pollFnRef.current?.(),
+          pollIntervalRef.current
+        );
+      }
+    };
   }, [clearTimers]);
 
   /** Cria um novo PIX */
@@ -168,12 +181,15 @@ export function usePayment(): UsePaymentReturn {
       startCountdown();
       isPollingRef.current = true;
       pollIntervalRef.current = POLL_INITIAL_MS;
-      pollTimeoutRef.current = window.setTimeout(pollStatus, POLL_INITIAL_MS);
+      pollTimeoutRef.current = window.setTimeout(
+        () => pollFnRef.current?.(),
+        POLL_INITIAL_MS
+      );
     } catch (err) {
       setStatus('error');
       setErrorMessage(err instanceof Error ? err.message : 'Erro inesperado');
     }
-  }, [clearTimers, startCountdown, pollStatus]);
+  }, [clearTimers, startCountdown]);
 
   // Cleanup ao desmontar
   useEffect(() => {
