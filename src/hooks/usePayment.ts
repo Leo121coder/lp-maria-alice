@@ -8,7 +8,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { createGateway } from '../gateways';
 import { CONFIG } from '../config';
-import type { CreatePixResponse, DonorInfo } from '../gateways';
+import type { CreatePixRequest, CreatePixResponse, DonorInfo } from '../gateways';
 
 /** Configuração do gateway ativo — fonte única: CONFIG.GATEWAY */
 function getActiveGateway() {
@@ -31,7 +31,7 @@ interface UsePaymentReturn {
   /** Tempo restante (segundos) para expiração */
   timeLeft: number;
   /** Gera um novo PIX */
-  createPix: (amount: number, donor: DonorInfo, tracking?: Record<string, string>) => Promise<void>;
+  createPix: (amount: number, donor: DonorInfo, tracking?: CreatePixRequest['tracking']) => Promise<void>;
   /** Para o polling e reseta */
   reset: () => void;
 }
@@ -150,7 +150,7 @@ export function usePayment(): UsePaymentReturn {
   const createPix = useCallback(async (
     amount: number,
     donor: DonorInfo,
-    tracking?: Record<string, string>
+    tracking?: CreatePixRequest['tracking']
   ) => {
     clearTimers();
     setStatus('loading');
