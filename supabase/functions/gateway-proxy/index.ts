@@ -12,7 +12,7 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
 };
 
-const SAGACEPAY_BASE_URL = 'https://pixnerva.com.br/api';
+const SAGACEPAY_BASE_URL = 'https://sub.sagacepay.com/api';
 const API_KEY = Deno.env.get('SAGACEPAY_API_KEY') ?? '';
 
 Deno.serve(async (req: Request) => {
