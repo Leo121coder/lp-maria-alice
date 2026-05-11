@@ -7,6 +7,9 @@
  *   1. Crie o adapter em adapters/NomeAdapter.ts
  *   2. Adicione o case no switch abaixo
  *   3. Pronto — zero mudanças no checkout/frontend
+ * 
+ * ⚠️ SEGURANÇA: O config passado aqui contém APENAS o proxyUrl.
+ *    Nenhuma chave de API transita pelo frontend.
  */
 
 import type { IPaymentGateway, GatewayConfig } from './types';
@@ -24,7 +27,7 @@ const GATEWAY_REGISTRY: Record<string, new (config: GatewayConfig) => IPaymentGa
 /**
  * Cria uma instância do gateway de pagamento
  * @param gatewayName - Nome do gateway (ex: 'sagacepay')
- * @param config - Configuração com apiKey e apiUrl
+ * @param config - Configuração com proxyUrl (sem secrets)
  * @returns Instância do gateway pronta para uso
  */
 export function createGateway(gatewayName: string, config: GatewayConfig): IPaymentGateway {

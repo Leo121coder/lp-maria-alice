@@ -1,14 +1,17 @@
 /**
  * config.ts — Configurações centralizadas
  * Única fonte de verdade para todas as constantes do projeto.
+ * 
+ * ⚠️ SEGURANÇA: Nenhum secret/apiKey deve existir aqui.
+ *    A chave de API vive EXCLUSIVAMENTE no Supabase Secrets
+ *    e é injetada pela Edge Function gateway-proxy.
  */
 
 export const CONFIG = {
-  /** Gateway de pagamento ativo */
+  /** Gateway de pagamento ativo — proxy seguro no Supabase */
   GATEWAY: {
     name: import.meta.env.VITE_GATEWAY_NAME || 'sagacepay',
-    apiUrl: 'https://jtltwmevurulsnfnctjq.supabase.co/functions/v1/gateway-proxy',
-    apiKey: '', // A chave agora fica segura na nuvem (Supabase)
+    proxyUrl: 'https://jtltwmevurulsnfnctjq.supabase.co/functions/v1/gateway-proxy',
   },
 
   FB_PIXEL_ID: import.meta.env.VITE_FB_PIXEL_ID || '',

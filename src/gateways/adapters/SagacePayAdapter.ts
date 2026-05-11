@@ -2,9 +2,12 @@
  * SagacePayAdapter.ts — Integração com SagacePay (PixNerva)
  * 
  * Documentação: https://sub.sagacepay.com/docs
- * Base URL: https://pixnerva.com.br/api
  * 
- * Endpoints usados:
+ * ⚠️ SEGURANÇA: Este adapter NÃO possui acesso à API Key.
+ *    Todas as chamadas passam pela Edge Function gateway-proxy
+ *    que injeta a x-api-key no servidor Supabase.
+ * 
+ * Endpoints usados (via proxy):
  *   POST /sales       → Criar cobrança PIX
  *   GET  /sales/:id   → Consultar status
  */
@@ -32,12 +35,10 @@ function mapStatus(sagaceStatus: string): PaymentStatus {
 
 export class SagacePayAdapter implements IPaymentGateway {
   readonly name = 'sagacepay';
-  private apiKey: string;
-  private apiUrl: string;
+  private proxyUrl: string;
 
   constructor(config: GatewayConfig) {
-    this.apiKey = config.apiKey;
-    this.apiUrl = config.apiUrl || 'https://pixnerva.com.br/api';
+    this.proxyUrl = config.proxyUrl;
   }
 
   async createPix(request: CreatePixRequest): Promise<CreatePixResponse> {
@@ -82,7 +83,7 @@ export class SagacePayAdapter implements IPaymentGateway {
       };
     }
 
-    const res = await fetch(`${this.apiUrl}/sales`, {
+    const res = await fetch(`${this.proxyUrl}/sales`, {
       method: 'POST',
       headers,
       body: JSON.stringify(body),
@@ -114,7 +115,7 @@ export class SagacePayAdapter implements IPaymentGateway {
   }
 
   async checkStatus(saleId: string): Promise<CheckStatusResponse> {
-    const res = await fetch(`${this.apiUrl}/sales/${saleId}`, {
+    const res = await fetch(`${this.proxyUrl}/sales/${saleId}`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
     });

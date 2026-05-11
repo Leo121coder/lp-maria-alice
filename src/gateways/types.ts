@@ -4,6 +4,10 @@
  * Toda integração de pagamento implementa IPaymentGateway.
  * Para adicionar um novo gateway, basta criar uma classe que implemente
  * essa interface e registrar no PaymentFactory.
+ * 
+ * ⚠️ SEGURANÇA: Nenhuma apiKey transita pelo frontend.
+ *    A autenticação com o gateway real é feita EXCLUSIVAMENTE
+ *    pela Edge Function gateway-proxy no Supabase.
  */
 
 /** Status possíveis de um pagamento */
@@ -65,10 +69,8 @@ export interface IPaymentGateway {
   checkStatus(saleId: string): Promise<CheckStatusResponse>;
 }
 
-/** Configuração de um gateway */
+/** Configuração de um gateway (frontend-safe — sem secrets) */
 export interface GatewayConfig {
   name: string;
-  apiKey: string;
-  apiUrl: string;
-  webhookSecret?: string;
+  proxyUrl: string;          // URL da Edge Function proxy (nunca a URL do gateway real)
 }

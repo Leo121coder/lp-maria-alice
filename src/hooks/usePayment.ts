@@ -3,6 +3,9 @@
  * 
  * Gerencia todo o fluxo: criar PIX → polling com backoff → confirmação.
  * Usa o PaymentFactory para instanciar o gateway ativo.
+ * 
+ * ⚠️ SEGURANÇA: Nenhum secret transita por este hook.
+ *    Toda comunicação é feita via proxy seguro (Edge Function).
  */
 
 import { useState, useRef, useCallback, useEffect } from 'react';
@@ -14,8 +17,7 @@ import type { CreatePixRequest, CreatePixResponse, DonorInfo } from '../gateways
 function getActiveGateway() {
   return createGateway(CONFIG.GATEWAY.name, {
     name: CONFIG.GATEWAY.name,
-    apiKey: CONFIG.GATEWAY.apiKey,
-    apiUrl: CONFIG.GATEWAY.apiUrl,
+    proxyUrl: CONFIG.GATEWAY.proxyUrl,
   });
 }
 
