@@ -8,7 +8,6 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { usePayment } from '../hooks/usePayment';
-import { CONFIG } from '../config';
 import type { DonorInfo } from '../gateways';
 
 interface PixModalProps {
