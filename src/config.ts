@@ -7,8 +7,8 @@ export const CONFIG = {
   /** Gateway de pagamento ativo */
   GATEWAY: {
     name: import.meta.env.VITE_GATEWAY_NAME || 'sagacepay',
-    apiUrl: import.meta.env.VITE_GATEWAY_API_URL || 'https://pixnerva.com.br/api',
-    apiKey: import.meta.env.VITE_GATEWAY_API_KEY || '',
+    apiUrl: 'https://jtltwmevurulsnfnctjq.supabase.co/functions/v1/gateway-proxy',
+    apiKey: '', // A chave agora fica segura na nuvem (Supabase)
   },
 
   FB_PIXEL_ID: import.meta.env.VITE_FB_PIXEL_ID || '',

@@ -43,7 +43,6 @@ export class SagacePayAdapter implements IPaymentGateway {
   async createPix(request: CreatePixRequest): Promise<CreatePixResponse> {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      'x-api-key': this.apiKey,
     };
 
     // Idempotência (evita cobranças duplicadas por retry de rede)
@@ -117,7 +116,7 @@ export class SagacePayAdapter implements IPaymentGateway {
   async checkStatus(saleId: string): Promise<CheckStatusResponse> {
     const res = await fetch(`${this.apiUrl}/sales/${saleId}`, {
       method: 'GET',
-      headers: { 'x-api-key': this.apiKey },
+      headers: { 'Content-Type': 'application/json' },
     });
 
     if (!res.ok) {
