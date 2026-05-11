@@ -7,7 +7,14 @@ export function Hero() {
 
       {/* Galeria / Banner */}
       <div className="galeria">
-        <img src="/images/foto banner.png" alt="Maria Alice" />
+        <img 
+          src="/images/foto banner.png" 
+          alt="Maria Alice" 
+          fetchPriority="high" 
+          loading="eager" 
+          decoding="sync"
+          style={{ width: '100%', height: 'auto', display: 'block' }} 
+        />
       </div>
 
       {/* Categorias abaixo da imagem */}
