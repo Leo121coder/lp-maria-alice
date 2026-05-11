@@ -290,6 +290,39 @@ img { max-width: 100%; height: auto; display: block; }
 .cross-sell p { font-size: 0.85rem; margin-bottom: 12px; color: #444; }
 .btn-cross-sell { display: inline-block; background: var(--green); color: #fff; padding: 10px 24px; border-radius: 6px; font-weight: 700; font-size: 0.9rem; }
 
+/* ── Formulário do Doador ──────────────────── */
+.donor-form { display: flex; flex-direction: column; gap: 14px; }
+.donor-form h2 { color: var(--green); font-size: 1.4rem; font-weight: 600; text-align: center; margin-bottom: 0; }
+.donor-form-subtitle { color: var(--text-gray); font-size: 0.9rem; text-align: center; margin-bottom: 4px; }
+.donor-checkbox { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.9rem; color: var(--text); }
+.donor-checkbox input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--green); cursor: pointer; }
+.donor-field { display: flex; flex-direction: column; gap: 4px; }
+.donor-field label { font-size: 0.85rem; font-weight: 600; color: var(--text); }
+.donor-field input {
+  width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px;
+  font-size: 0.95rem; color: var(--text); background: var(--bg-alt); transition: border-color 0.2s;
+}
+.donor-field input:focus { outline: none; border-color: var(--green); box-shadow: 0 0 0 3px rgba(36,202,104,0.12); }
+.donor-field input::placeholder { color: #bbb; }
+.btn-generate-pix {
+  width: 100%; background: var(--green); color: #fff; border: none; padding: 14px;
+  border-radius: 8px; font-size: 1.05rem; font-weight: 700; cursor: pointer;
+  transition: opacity 0.2s, transform 0.1s; margin-top: 4px;
+}
+.btn-generate-pix:hover:not(:disabled) { opacity: 0.9; }
+.btn-generate-pix:active:not(:disabled) { transform: scale(0.98); }
+.btn-generate-pix:disabled { opacity: 0.5; cursor: not-allowed; }
+.donor-form-security { font-size: 0.8rem; color: var(--text-gray); text-align: center; margin-top: 4px; }
+
+/* ── PIX Countdown Timer ───────────────────── */
+.pix-countdown {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  background: #fff8e1; border: 1px solid #ffd54f; border-radius: 8px;
+  padding: 10px 16px; margin-bottom: 16px; font-size: 0.9rem; color: #8d6e00;
+}
+.pix-countdown-icon { font-size: 1.1rem; }
+.pix-countdown strong { font-weight: 700; color: #e65100; }
+
 /* ── Mobile CTA ────────────────────────────── */
 .mobile-cta { display: none; }
 

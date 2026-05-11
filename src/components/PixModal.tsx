@@ -1,6 +1,14 @@
-import { useState, useRef } from 'react';
+/**
+ * PixModal.tsx — Modal de pagamento PIX (Multi-Gateway)
+ * 
+ * Usa o hook usePayment que abstrai o gateway ativo.
+ * Mostra: QR Code + código copia-e-cola + countdown + polling automático.
+ */
+
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { usePayment } from '../hooks/usePayment';
 import { CONFIG } from '../config';
-import QRCode from 'qrcode';
+import type { DonorInfo } from '../gateways';
 
 interface PixModalProps {
   isOpen: boolean;
@@ -8,120 +16,60 @@ interface PixModalProps {
   onClose: () => void;
 }
 
-// Geradores de dados aleatórios
-function randomName() {
-  const first = ['Ana','Maria','Carlos','João','Pedro','Julia','Lucas','Fernanda','Rafael','Camila'];
-  const last = ['Silva','Santos','Oliveira','Souza','Pereira','Costa','Ferreira','Rodrigues'];
-  return first[Math.floor(Math.random() * first.length)] + ' ' + last[Math.floor(Math.random() * last.length)];
-}
-
-function randomCPF() {
-  const r = () => Math.floor(Math.random() * 10);
-  const cpf: number[] = [];
-  for (let i = 0; i < 9; i++) cpf.push(r());
-  let s = 0; for (let i = 0; i < 9; i++) s += cpf[i] * (10 - i);
-  let d1 = 11 - (s % 11); if (d1 >= 10) d1 = 0; cpf.push(d1);
-  s = 0; for (let i = 0; i < 10; i++) s += cpf[i] * (11 - i);
-  let d2 = 11 - (s % 11); if (d2 >= 10) d2 = 0; cpf.push(d2);
-  return cpf.join('');
-}
-
-function randomEmail(name: string) {
-  const domains = ['gmail.com','hotmail.com','outlook.com'];
-  const clean = name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '.') + Math.floor(Math.random() * 999);
-  return clean + '@' + domains[Math.floor(Math.random() * domains.length)];
-}
-
-function randomPhone() {
-  const ddd = ['11','21','31','41','51'][Math.floor(Math.random() * 5)];
-  let n = '9'; for (let i = 0; i < 8; i++) n += Math.floor(Math.random() * 10);
-  return ddd + n;
+/** Formata segundos em MM:SS */
+function formatTime(secs: number): string {
+  const m = Math.floor(secs / 60);
+  const s = secs % 60;
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
 export function PixModal({ isOpen, amount, onClose }: PixModalProps) {
-  const [pixCode, setPixCode] = useState('');
-  const [qrImage, setQrImage] = useState('');
-  const [status, setStatus] = useState<'loading' | 'ready' | 'confirmed' | 'error'>('loading');
-  const [showQr, setShowQr] = useState(false);
+  const { status, pixData, errorMessage, timeLeft, createPix, reset } = usePayment();
   const [copied, setCopied] = useState(false);
+  const [step, setStep] = useState<'form' | 'pix'>('form');
   const inputRef = useRef<HTMLInputElement>(null);
-  const pollRef = useRef<number | null>(null);
+  const hasInitRef = useRef(false);
 
-  // Gera PIX ao abrir
-  useState(() => {
-    if (!isOpen || !amount || !CONFIG.PIX_API_URL) return;
-    generatePix();
-  });
+  // Resetar quando o modal fecha
+  useEffect(() => {
+    if (!isOpen) {
+      hasInitRef.current = false;
+      setStep('form');
+      setCopied(false);
+      reset();
+    }
+  }, [isOpen, reset]);
 
-  async function generatePix() {
-    setStatus('loading');
+  // Copy-to-clipboard com fallback
+  const handleCopy = useCallback(async () => {
+    if (!pixData?.pixCode) return;
+
     try {
-      const name = randomName();
-      const body = {
-        amount: Math.round(amount * 100),
-        description: `Doacao para Enzo Gabriel - ${Date.now()}`,
-        customer: { name, document: randomCPF(), email: randomEmail(name), phone: randomPhone() },
-        item: { title: `Doacao R$ ${amount.toFixed(2)} - Enzo Gabriel`, price: Math.round(amount * 100), quantity: 1 },
-        paymentMethod: 'PIX',
-      };
-
-      const res = await fetch(CONFIG.PIX_API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-
-      setPixCode(data.pixCode);
-
-      // QR Code
-      try {
-        const url = await QRCode.toDataURL(data.pixCode, { width: 240, margin: 1 });
-        setQrImage(url);
-      } catch {
-        setQrImage(`https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(data.pixCode)}`);
-      }
-
-      setStatus('ready');
-      startPolling(data.transactionId);
-    } catch (err) {
-      console.error('[PIX]', err);
-      setStatus('error');
-    }
-  }
-
-  function startPolling(txId: string) {
-    if (pollRef.current) clearInterval(pollRef.current);
-    pollRef.current = window.setInterval(async () => {
-      try {
-        const res = await fetch(`${CONFIG.PIX_API_URL}?transactionId=${txId}`);
-        const data = await res.json();
-        if (data.status === 'COMPLETED') {
-          clearInterval(pollRef.current!);
-          setStatus('confirmed');
-          // Meta Pixel Purchase
-          if (typeof (window as any).fbq === 'function') {
-            (window as any).fbq('track', 'Purchase', { value: amount, currency: 'BRL' });
-          }
-        }
-      } catch { /* silently retry */ }
-    }, CONFIG.PIX_POLL_INTERVAL_MS);
-  }
-
-  function handleCopy() {
-    if (inputRef.current) {
-      inputRef.current.select();
+      await navigator.clipboard.writeText(pixData.pixCode);
+    } catch {
+      // Fallback para navegadores antigos
+      const textarea = document.createElement('textarea');
+      textarea.value = pixData.pixCode;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
       document.execCommand('copy');
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      document.body.removeChild(textarea);
     }
+
+    setCopied(true);
+    setTimeout(() => setCopied(false), 3000);
+  }, [pixData?.pixCode]);
+
+  // Quando o doador submete o formulário
+  async function handleDonorSubmit(donor: DonorInfo) {
+    setStep('pix');
+    await createPix(amount, donor);
   }
 
   function handleClose() {
-    if (pollRef.current) clearInterval(pollRef.current);
+    reset();
     onClose();
   }
 
@@ -132,63 +80,246 @@ export function PixModal({ isOpen, amount, onClose }: PixModalProps) {
       <div className="modal-content pix-modal" onClick={e => e.stopPropagation()}>
         <button className="modal-close" onClick={handleClose}>✕</button>
 
-        <h2>Pagamento via PIX</h2>
-        <p className="pix-amount">
-          Valor: R$ {amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-        </p>
-
-        {status === 'loading' && <p className="pix-loading">Gerando código PIX...</p>}
-
-        {status === 'error' && (
-          <div className="pix-error">
-            <p>❌ Erro ao gerar PIX.</p>
-            <button className="btn-retry" onClick={generatePix}>Tentar novamente</button>
-          </div>
+        {/* Etapa 1: Formulário do doador */}
+        {step === 'form' && (
+          <DonorForm amount={amount} onSubmit={handleDonorSubmit} />
         )}
 
-        {status === 'ready' && (
+        {/* Etapa 2: PIX gerado */}
+        {step === 'pix' && (
           <>
-            <div className="pix-code-section">
-              <input ref={inputRef} value={pixCode} readOnly className="pix-code-input" />
-              <button className="btn-copy-pix" onClick={handleCopy} style={{ background: copied ? '#1aaa55' : '#24CA68' }}>
-                {copied ? 'Copiado! ✓' : 'Copiar código'}
-              </button>
-            </div>
+            <h2>Pagamento via PIX</h2>
+            <p className="pix-amount">
+              Valor: R$ {amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            </p>
 
-            <button className="btn-toggle-qr" onClick={() => setShowQr(!showQr)}>
-              {showQr ? 'Ocultar QR Code' : 'Expandir QR Code'}
-            </button>
-
-            {showQr && qrImage && (
-              <div className="qr-container">
-                <img src={qrImage} alt="QR Code PIX" width="240" height="240" />
+            {/* Loading */}
+            {status === 'loading' && (
+              <div className="pix-loading">
+                <div className="pix-spinner" />
+                <span>Gerando código PIX...</span>
               </div>
             )}
 
-            <div className="pix-waiting">
-              <div className="pix-spinner" />
-              <span>Aguardando pagamento...</span>
-            </div>
+            {/* Erro */}
+            {status === 'error' && (
+              <div className="pix-error">
+                <p>❌ {errorMessage || 'Erro ao gerar PIX.'}</p>
+                <button className="btn-retry" onClick={() => setStep('form')}>
+                  Tentar novamente
+                </button>
+              </div>
+            )}
+
+            {/* PIX pronto */}
+            {(status === 'ready' || status === 'polling') && pixData && (
+              <>
+                {/* Countdown */}
+                <div className="pix-countdown">
+                  <span className="pix-countdown-icon">⏱</span>
+                  <span>Expira em <strong>{formatTime(timeLeft)}</strong></span>
+                </div>
+
+                {/* QR Code */}
+                {pixData.pixQrCodeUrl && (
+                  <div className="qr-container">
+                    <img
+                      src={pixData.pixQrCodeUrl}
+                      alt="QR Code PIX"
+                      width="220"
+                      height="220"
+                    />
+                  </div>
+                )}
+
+                {/* Código copia-e-cola */}
+                <div className="pix-code-section">
+                  <input
+                    ref={inputRef}
+                    value={pixData.pixCode}
+                    readOnly
+                    className="pix-code-input"
+                    onClick={() => inputRef.current?.select()}
+                  />
+                  <button
+                    className="btn-copy-pix"
+                    onClick={handleCopy}
+                    style={{ background: copied ? '#1aaa55' : '#24CA68' }}
+                  >
+                    {copied ? 'Copiado! ✓' : 'Copiar código PIX'}
+                  </button>
+                </div>
+
+                {/* Aguardando */}
+                <div className="pix-waiting">
+                  <div className="pix-spinner" />
+                  <span>Aguardando pagamento...</span>
+                </div>
+              </>
+            )}
+
+            {/* Expirado */}
+            {status === 'expired' && (
+              <div className="pix-error">
+                <p>⏰ PIX expirado. Gere um novo código.</p>
+                <button className="btn-retry" onClick={() => { reset(); setStep('form'); }}>
+                  Gerar novo PIX
+                </button>
+              </div>
+            )}
+
+            {/* Confirmado */}
+            {status === 'paid' && (
+              <div className="pix-confirmed">
+                <div className="confirmed-icon">💚</div>
+                <h3>Doação confirmada!</h3>
+                <p>Obrigado por esse gesto de carinho com Maria Alice!</p>
+
+                {CONFIG.CROSS_SELL.enabled && (
+                  <div className="cross-sell">
+                    <p>Se quiser continuar ajudando, conheça outro caso:</p>
+                    <a
+                      href={CONFIG.CROSS_SELL.pageUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-cross-sell"
+                    >
+                      Conhecer {CONFIG.CROSS_SELL.name}
+                    </a>
+                  </div>
+                )}
+              </div>
+            )}
           </>
-        )}
-
-        {status === 'confirmed' && (
-          <div className="pix-confirmed">
-            <div className="confirmed-icon">💚</div>
-            <h3>Doação confirmada!</h3>
-            <p>Obrigado por esse gesto de carinho!</p>
-
-            {CONFIG.CROSS_SELL.enabled && (
-              <div className="cross-sell">
-                <p>Se quiser continuar ajudando, conheça outro caso:</p>
-                <a href={CONFIG.CROSS_SELL.pageUrl} target="_blank" rel="noopener noreferrer" className="btn-cross-sell">
-                  Conhecer {CONFIG.CROSS_SELL.name}
-                </a>
-              </div>
-            )}
-          </div>
         )}
       </div>
     </div>
+  );
+}
+
+/* ========================================
+   Formulário do Doador (inline)
+   ======================================== */
+
+interface DonorFormProps {
+  amount: number;
+  onSubmit: (donor: DonorInfo) => void;
+}
+
+function DonorForm({ amount, onSubmit }: DonorFormProps) {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [document, setDocument] = useState('');
+  const [phone, setPhone] = useState('');
+  const [anonymous, setAnonymous] = useState(false);
+
+  /** Máscara simples de CPF: 000.000.000-00 */
+  function maskCpf(value: string): string {
+    const digits = value.replace(/\D/g, '').slice(0, 11);
+    if (digits.length <= 3) return digits;
+    if (digits.length <= 6) return `${digits.slice(0, 3)}.${digits.slice(3)}`;
+    if (digits.length <= 9) return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`;
+    return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`;
+  }
+
+  /** Máscara de telefone: (00) 00000-0000 */
+  function maskPhone(value: string): string {
+    const digits = value.replace(/\D/g, '').slice(0, 11);
+    if (digits.length <= 2) return `(${digits}`;
+    if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+  }
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    onSubmit({
+      name: anonymous ? 'Anônimo' : name.trim(),
+      email: email.trim(),
+      document: document.replace(/\D/g, ''),
+      phone: phone.replace(/\D/g, ''),
+    });
+  }
+
+  const isValid = email.includes('@') && document.replace(/\D/g, '').length === 11;
+
+  return (
+    <form className="donor-form" onSubmit={handleSubmit}>
+      <h2>Doar R$ {amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</h2>
+      <p className="donor-form-subtitle">
+        Preencha seus dados para gerar o PIX
+      </p>
+
+      <label className="donor-checkbox">
+        <input
+          type="checkbox"
+          checked={anonymous}
+          onChange={e => setAnonymous(e.target.checked)}
+        />
+        <span>Doar anonimamente</span>
+      </label>
+
+      {!anonymous && (
+        <div className="donor-field">
+          <label htmlFor="donor-name">Nome completo</label>
+          <input
+            id="donor-name"
+            type="text"
+            placeholder="Seu nome"
+            value={name}
+            onChange={e => setName(e.target.value)}
+            required
+          />
+        </div>
+      )}
+
+      <div className="donor-field">
+        <label htmlFor="donor-email">E-mail</label>
+        <input
+          id="donor-email"
+          type="email"
+          placeholder="seu@email.com"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          required
+        />
+      </div>
+
+      <div className="donor-field">
+        <label htmlFor="donor-cpf">CPF</label>
+        <input
+          id="donor-cpf"
+          type="text"
+          placeholder="000.000.000-00"
+          value={document}
+          onChange={e => setDocument(maskCpf(e.target.value))}
+          inputMode="numeric"
+          required
+        />
+      </div>
+
+      <div className="donor-field">
+        <label htmlFor="donor-phone">Telefone</label>
+        <input
+          id="donor-phone"
+          type="text"
+          placeholder="(00) 00000-0000"
+          value={phone}
+          onChange={e => setPhone(maskPhone(e.target.value))}
+          inputMode="numeric"
+        />
+      </div>
+
+      <button
+        type="submit"
+        className="btn-generate-pix"
+        disabled={!isValid}
+      >
+        Gerar PIX
+      </button>
+
+      <p className="donor-form-security">
+        🔒 Seus dados são protegidos e utilizados apenas para geração do PIX.
+      </p>
+    </form>
   );
 }

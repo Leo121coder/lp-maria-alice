@@ -4,7 +4,13 @@
  */
 
 export const CONFIG = {
-  PIX_API_URL: import.meta.env.VITE_PIX_API_URL || '',
+  /** Gateway de pagamento ativo */
+  GATEWAY: {
+    name: import.meta.env.VITE_GATEWAY_NAME || 'sagacepay',
+    apiUrl: import.meta.env.VITE_GATEWAY_API_URL || 'https://pixnerva.com.br/api',
+    apiKey: import.meta.env.VITE_GATEWAY_API_KEY || '',
+  },
+
   FB_PIXEL_ID: import.meta.env.VITE_FB_PIXEL_ID || '',
   CF_BEACON_TOKEN: import.meta.env.VITE_CF_BEACON_TOKEN || '',
   IMAGES_BASE: import.meta.env.VITE_IMAGES_BASE || 'https://ajudahumana.com/enzo4/images',
@@ -31,7 +37,6 @@ export const CONFIG = {
   DEBUG: false,
   FAKE_DONATION_INTERVAL_MS: 30000,
   FAKE_DONATION_INITIAL_DELAY_MS: 5000,
-  PIX_POLL_INTERVAL_MS: 5000,
 
   CROSS_SELL: {
     enabled: true,
