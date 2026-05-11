@@ -1,0 +1,383 @@
+/* ============================================
+ * styles.css — LP Enzo Gabriel
+ * Clone visual fiel do original
+ * ============================================ */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --green: #24CA68;
+  --green-dark: #009D4E;
+  --red: #dc3545;
+  --bg: #fff;
+  --bg-alt: #f9f9f9;
+  --text: #282828;
+  --text-gray: #8a8a8a;
+  --text-muted: #6b7280;
+  --border: #e5e7eb;
+  --radius: 8px;
+  --font: 'Montserrat', sans-serif;
+}
+
+body { font-family: var(--font); color: var(--text); background: var(--bg-alt); line-height: 1.6; }
+a { color: var(--green); text-decoration: none; }
+img { max-width: 100%; height: auto; display: block; }
+.container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+
+/* ── Banner de Urgência ────────────────────── */
+.urgency-banner {
+  background: linear-gradient(90deg, #ff4444, #cc0000);
+  color: #fff; text-align: center; padding: 10px 16px;
+  font-size: 0.9rem; font-weight: 600;
+}
+
+/* ── Header ────────────────────────────────── */
+.header { background: var(--bg); border-bottom: 1px solid #eee; padding: 14px 0; }
+.header-content { display: flex; align-items: center; }
+.logo-img { height: 42px; }
+
+/* ── Layout Principal ──────────────────────── */
+.main-content { padding: 20px 0; }
+.main-grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  grid-template-areas:
+    "hero sidebar"
+    "tabs sidebar";
+  gap: 32px;
+  align-items: start;
+}
+.content-hero { grid-area: hero; }
+.content-sidebar { grid-area: sidebar; }
+.content-tabs { grid-area: tabs; }
+
+/* ── Top Vakinha (Título) ──────────────────── */
+.top-vakinha { margin: 10px 0 20px; }
+.top-category { display: flex; justify-content: center; font-size: 14px; color: rgb(64, 64, 64); text-transform: uppercase; margin-bottom: 8px; font-weight: 400; }
+.campaign-title { font-size: 48px; font-weight: 700; color: rgb(64, 64, 64); text-align: center; margin: 5px auto 7px; line-height: 1.2; }
+.campaign-subtitle-detail { display: block; color: rgb(40, 40, 40); font-size: 18px; line-height: 27px; text-align: center; }
+.campaign-id { display: flex; justify-content: center; font-size: 14px; color: rgb(64, 64, 64); text-transform: uppercase; font-weight: 400; margin-top: 10px; }
+
+/* ── Galeria ───────────────────────────────── */
+.hero-gallery { background-color: rgb(255, 255, 255); padding: 15px; }
+.galeria { border-radius: var(--radius); overflow: hidden; }
+.galeria img { width: 100%; }
+
+.image-meta {
+  display: flex; align-items: center; justify-content: space-between;
+  margin: 10px 2px 0; color: #7a7a7a; font-size: 0.86rem; letter-spacing: 0.2px; text-transform: uppercase;
+}
+.location { display: flex; align-items: center; gap: 6px; }
+
+/* ── Donation Sidebar ──────────────────────── */
+.donation-sidebar {
+  background: var(--bg);
+  padding: 24px; 
+  position: sticky; top: 15px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+.sidebar-progresso { padding: 20px 0 22px; }
+.sidebar-bar { width: 100%; height: 10px; background: #e9ecef; border-radius: 5px; margin-bottom: 0; position: relative; overflow: hidden; }
+.sidebar-bar-inner { width: 12.5%; height: 100%; background: var(--green); border-radius: 5px; }
+
+.sidebar-label { font-size: 20px; color: var(--text); font-weight: 700; display: block; line-height: 1; }
+.sidebar-amount { font-size: 36px; font-weight: 700; color: var(--green); margin: 0 0 20px; }
+
+.sidebar-meta { margin-top: 20px; }
+.sidebar-meta-label { font-size: 20px; color: var(--text-gray); display: block; line-height: 1.1; }
+.sidebar-meta-value { font-size: 20px; color: var(--text-gray); display: block; line-height: 1.1; }
+
+.sidebar-acao { border-bottom: 1px solid rgb(218, 218, 218); margin-bottom: 15px; margin-top: 15px; padding-bottom: 16px; }
+.btn-donate-main {
+  width: 100%; background: var(--green); color: #fff; border: none; padding: 12px 16px;
+  border-radius: 4px; font-size: 20px; font-weight: 700; cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-donate-main:hover { background: var(--green-dark); }
+
+.organizer-section {
+  display: flex; align-items: center; gap: 5px; padding-top: 16px;
+}
+.organizer-avatar { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; flex-shrink: 0; border: 3px solid rgb(241, 240, 240); background: #c2c2c2; }
+.organizer-info { display: flex; flex-direction: column; width: calc(100% - 50px); }
+.organizer-info strong { font-size: 14px; font-weight: 700; color: rgb(64,64,64); margin: 0 0 4px; }
+.organizer-info span { color: rgb(64,64,64); font-size: 12px; font-weight: 700; line-height: 16px; }
+.organizer-link { color: rgb(20,146,230); font-size: 10px; text-decoration: underline; display: block; margin: 6px 0 25px 4px; }
+
+/* ── Tabs ──────────────────────────────────── */
+.campaign-tabs { margin-top: 25px; }
+.tabs-nav { display: flex; align-items: center; margin-bottom: 0; border: none; }
+.tabs-nav button {
+  background: none; border: none; padding: 8px; font-size: 18px;
+  font-weight: 400; color: rgb(40, 40, 40); cursor: pointer;
+  border-bottom: 2px solid rgb(223, 223, 223); transition: all 0.2s;
+  margin-right: 16px; font-family: "Roboto", "Montserrat", sans-serif;
+}
+.tabs-nav button:last-child { margin-right: 0; }
+.tabs-nav button.active { color: var(--green); border-bottom-color: var(--green); font-weight: 700; }
+
+/* ── Tab Content ───────────────────────────── */
+.tab-content { padding: 25px 16px; background-color: rgb(255, 255, 255); }
+.tab-content p { margin-bottom: 12px; color: #444; line-height: 1.7; }
+
+.created-date { display: block; margin-bottom: 8px; color: var(--text-gray); font-size: 0.9rem; }
+
+.section-title { margin: 20px 0; font-weight: 800; }
+.section-title--green { color: var(--green); }
+.section-title--red { color: var(--red); }
+.section-label { margin: 10px 0 0; font-size: 0.72rem; color: var(--text-muted); letter-spacing: 0.3px; text-transform: uppercase; }
+
+/* Highlight boxes */
+.highlight-box {
+  padding: 15px; border-radius: 8px; margin: 20px 0; line-height: 1.6;
+}
+.highlight-box--green {
+  background: #d4edda; border-left: 4px solid var(--green);
+}
+.highlight-box--yellow {
+  background: #fff3cd; border-left: 4px solid #ffc107;
+}
+
+/* Video */
+.video-section { margin: 0 0 14px; }
+.campaign-video { width: 100%; border-radius: 10px; }
+
+/* Budget */
+.budget-list { display: flex; flex-direction: column; gap: 8px; margin: 20px 0; }
+.budget-item {
+  background: #fff; padding: 14px 16px; border-radius: 6px; border: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.budget-item-info { flex: 1; }
+.budget-item-title { font-size: 0.95rem; font-weight: 500; color: #374151; margin-bottom: 3px; }
+.budget-item-sub { font-size: 0.8rem; color: var(--text-muted); }
+.budget-item-value { font-size: 1rem; font-weight: 600; color: #374151; margin-left: 15px; white-space: nowrap; }
+.budget-total { text-align: center; font-size: 1.1em; margin: 20px 0; }
+.budget-desc { text-align: center; margin: 20px 0; }
+
+/* CTA Final */
+.btn-cta-final {
+  width: 100%; background: var(--green); color: #fff; border: none;
+  padding: 15px; font-size: 1.1em; border-radius: var(--radius); cursor: pointer;
+  transition: background 0.2s; margin: 16px 0;
+}
+.btn-cta-final:hover { background: var(--green-dark); }
+
+/* Bible quote */
+.bible-quote { max-width: 650px; margin: 10px auto 18px; text-align: center; color: var(--text-muted); font-size: 0.88rem; line-height: 1.5; }
+
+/* Comments */
+.comments-title { font-size: 1.1rem; margin: 24px 0 16px; }
+.comments-list { display: flex; flex-direction: column; gap: 16px; }
+.comment-card { display: flex; gap: 12px; }
+.comment-avatar { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+.comment-body { flex: 1; }
+.comment-body strong { display: block; font-size: 0.9rem; margin-bottom: 4px; }
+.comment-body p { font-size: 0.88rem; color: #444; margin-bottom: 4px; }
+.comment-time { font-size: 0.75rem; color: var(--green); font-weight: 600; }
+
+/* No content */
+.no-content { text-align: center; padding: 48px 0; color: var(--text-gray); }
+
+/* ── Quem Ajudou ───────────────────────────── */
+.quem-ajudou-title {
+  font-size: 1.3rem; font-weight: 700; color: #333;
+  margin-bottom: 8px; text-align: center; font-family: 'Poppins', sans-serif;
+}
+.quem-ajudou-sub {
+  font-size: 0.95rem; color: #666; margin-bottom: 20px;
+  text-align: center; font-family: 'Poppins', sans-serif;
+}
+.donation-card {
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  margin-bottom: 0.75rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.donation-card-info { display: flex; flex-direction: column; gap: 4px; }
+.donation-card-name { font-weight: 500; color: #333; }
+.donation-card-time { font-size: 0.85rem; color: #666; }
+.donation-card-amount { font-weight: 600; color: #24CA68; }
+
+/* ── Footer ────────────────────────────────── */
+.footer { margin-top: 2rem; background: #2c2c2c; color: #fff; }
+.footer-aviso { background: #f9f9f9; padding: 12px 0; text-align: center; }
+.footer-aviso span { font-size: 0.75rem; color: #888; line-height: 1.4; }
+.footer-body { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+.footer-top { display: flex; align-items: center; justify-content: flex-end; margin-bottom: 1rem; }
+.footer-socials { display: flex; align-items: center; gap: 16px; }
+.footer-socials a { display: flex; opacity: 0.8; transition: opacity 0.2s; }
+.footer-socials a:hover { opacity: 1; }
+.footer-socials svg { fill: #fff; }
+.footer-sep { width: 1px; height: 16px; background: #555; }
+.footer-columns { display: flex; flex-wrap: wrap; gap: 1.5rem; margin-top: 0; }
+.footer-col { flex: 1; min-width: 140px; }
+.footer-col h4 { font-size: 0.9rem; font-weight: 700; margin-bottom: 10px; color: #24CA68; }
+.footer-col ul { list-style: none; padding: 0; margin: 0; }
+.footer-col li { margin-bottom: 6px; }
+.footer-col a { color: #ccc; font-size: 0.85rem; text-decoration: none; transition: color 0.2s; line-height: 1.4; }
+.footer-col a:hover { color: #fff; }
+.footer-schedule { font-size: 0.85rem; color: #ccc; margin: 2px 0; }
+.footer-seal { margin-top: 12px; max-width: 100px; }
+.footer-store-badge { margin-bottom: 8px; max-width: 120px; display: block; }
+.footer-copyright { padding: 1rem; text-align: center; border-top: 1px solid #333; background: #222; }
+.footer-copyright span { font-size: 0.8rem; color: #888; }
+
+/* ── Modals ─────────────────────────────────── */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex;
+  align-items: center; justify-content: center; z-index: 9999; padding: 16px;
+}
+.modal-content {
+  background: var(--bg); border-radius: 12px; padding: 32px; max-width: 440px;
+  width: 100%; position: relative; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+.donate-modal-vakinha {
+  padding: 40px 32px 32px; max-width: 540px;
+}
+.modal-drag-handle {
+  width: 40px; height: 4px; background: #e0e0e0; border-radius: 2px;
+  position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+}
+.modal-close {
+  position: absolute; top: 12px; right: 16px; background: none; border: none;
+  font-size: 1.4rem; cursor: pointer; color: #999; transition: color 0.2s;
+}
+.modal-close:hover { color: #333; }
+.modal-vakinha-title {
+  color: #24ca68; font-size: 1.4rem; font-weight: 400; text-align: center; margin-bottom: 16px; line-height: 1.3;
+}
+.modal-vakinha-subtitle {
+  color: #666; font-size: 0.9rem; text-align: center; margin-bottom: 24px; line-height: 1.5;
+}
+.donate-vakinha-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;
+}
+.btn-vakinha-value {
+  background: #fff; border: 1px solid #24ca68; color: #24ca68;
+  padding: 14px 8px; font-size: 0.95rem; font-weight: 600; border-radius: 6px;
+  cursor: pointer; transition: all 0.2s;
+}
+.btn-vakinha-value:hover {
+  background: #e8f5e9;
+}
+.btn-back { width: 100%; background: none; border: none; color: var(--text-gray); cursor: pointer; padding: 8px; }
+
+/* PIX Modal */
+.pix-amount { font-size: 1.1rem; font-weight: 700; color: var(--green); margin-bottom: 20px; }
+.pix-loading { text-align: center; color: var(--text-gray); padding: 24px 0; }
+.pix-error { text-align: center; padding: 24px 0; }
+.pix-error p { color: var(--red); margin-bottom: 12px; }
+.btn-retry { background: var(--green); color: #fff; border: none; padding: 10px 24px; border-radius: 6px; cursor: pointer; }
+.pix-code-section { margin-bottom: 16px; }
+.pix-code-input { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.75rem; margin-bottom: 8px; background: var(--bg-alt); }
+.btn-copy-pix { width: 100%; background: var(--green); color: #fff; border: none; padding: 12px; border-radius: 6px; font-weight: 700; cursor: pointer; }
+.btn-toggle-qr { width: 100%; background: none; border: 1px solid var(--border); border-radius: 6px; padding: 10px; cursor: pointer; color: var(--text-gray); margin-bottom: 16px; }
+.qr-container { display: flex; justify-content: center; padding: 16px 0; }
+.pix-waiting { display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--text-gray); font-size: 0.85rem; }
+.pix-spinner { width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--green); border-radius: 50%; animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.pix-confirmed { text-align: center; padding: 16px 0; }
+.confirmed-icon { font-size: 3rem; margin-bottom: 12px; }
+.pix-confirmed h3 { color: var(--green); margin-bottom: 8px; }
+.cross-sell { margin-top: 20px; padding: 16px; background: #e8f5e9; border-radius: 8px; }
+.cross-sell p { font-size: 0.85rem; margin-bottom: 12px; color: #444; }
+.btn-cross-sell { display: inline-block; background: var(--green); color: #fff; padding: 10px 24px; border-radius: 6px; font-weight: 700; font-size: 0.9rem; }
+
+/* ── Mobile CTA ────────────────────────────── */
+.mobile-cta { display: none; }
+
+/* ── Custom DonationSidebar ───────────────── */
+.desktop-labels { display: block; }
+.mobile-labels { display: none; }
+.sidebar-pct-mobile { display: none; }
+.donation-sidebar { display: flex; flex-direction: column; }
+.organizer-section { order: 99; margin-top: 20px; border-top: 1px solid #eee; padding-top: 16px; }
+
+/* ── Responsive ────────────────────────────── */
+@media (max-width: 768px) {
+  /* Layout Mobile Inteligente e Confiável (Sem bugs no Safari/iOS) */
+  body { padding-bottom: 76px; } /* Espaço para o botão fixo */
+
+  .main-grid { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 0; 
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    overflow: hidden;
+  }
+  
+  .content-hero { order: 1; }
+  .content-sidebar { order: 2; }
+  
+  .content-tabs { 
+    order: 3; 
+    margin-top: 16px; 
+    border-radius: 12px;
+  }
+
+  .hero-gallery { padding: 0; border-radius: 0; background: transparent; }
+  .image-meta { padding: 16px; margin: 0; border-bottom: 1px solid #f0f0f0; }
+  .campaign-tabs { margin-top: 0; }
+  
+  /* Ajustes do Sidebar no Mobile */
+  .donation-sidebar { 
+    position: static; 
+    margin-top: 0; 
+    padding: 0 16px 16px 16px; 
+    border: none; 
+    box-shadow: none; 
+    border-radius: 0; 
+  }
+  .btn-donate-main { display: none; } 
+  
+  .organizer-section { order: 1; border: none; margin: 0; padding: 16px 0; }
+  .sidebar-progresso { order: 2; display: flex; align-items: center; gap: 12px; padding: 0 0 16px 0; }
+  .sidebar-bar { margin: 0; flex: 1; height: 8px; }
+  
+  .sidebar-amounts { order: 3; }
+  .desktop-labels { display: none; }
+  .mobile-labels { display: block; font-size: 1.15rem; padding-bottom: 8px; }
+  .mobile-amount-raised { color: var(--green); font-weight: 800; }
+  .mobile-amount-goal { color: var(--text-gray); font-size: 0.95rem; }
+  .sidebar-pct-mobile { display: block; color: var(--green); font-weight: 800; font-size: 1.15rem; }
+  
+  /* Header e Títulos */
+  .campaign-title { font-size: 1.6rem; margin-bottom: 12px; }
+  .campaign-subtitle-detail { font-size: 1rem; line-height: 1.5; padding: 0 8px; }
+  
+  /* Abas (Tabs) Mobile */
+  .tabs-nav { overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; padding-bottom: 4px; }
+  .tabs-nav::-webkit-scrollbar { display: none; }
+  .tabs-nav button { font-size: 16px; margin-right: 12px; }
+
+  /* Modal de Doação Mobile */
+  .donate-modal-vakinha { padding: 32px 16px 24px; }
+  .modal-vakinha-title { font-size: 1.2rem; }
+  .btn-vakinha-value { font-size: 0.9rem; padding: 12px 4px; }
+
+  /* Mobile CTA (Botão Fixo no Rodapé) */
+  .mobile-cta {
+    display: block; position: fixed; bottom: 0; left: 0; right: 0;
+    background: var(--bg); padding: 12px 16px; border-top: 1px solid var(--border);
+    box-shadow: 0 -4px 12px rgba(0,0,0,0.1); z-index: 999;
+  }
+  .btn-donate-mobile {
+    width: 100%; background: var(--green); color: #fff; border: none; padding: 14px;
+    border-radius: 4px; font-size: 1.1rem; font-weight: 700; cursor: pointer;
+  }
+  
+  /* Footer Mobile */
+  .footer-top { flex-direction: column; margin-bottom: 2rem; }
+  .footer-socials { justify-content: center; width: 100%; }
+  .footer-columns { flex-direction: column; gap: 2rem; text-align: center; }
+  .footer-col h4 { font-size: 1.1rem; }
+}
