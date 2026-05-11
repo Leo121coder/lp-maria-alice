@@ -7,7 +7,7 @@ export function Hero() {
 
       {/* Galeria / Banner */}
       <div className="galeria">
-        <img src="/images/SnapClip.app_559305881_1487921775791250_3892457936507188863_n.png" alt="Maria Alice" />
+        <img src="/images/foto banner.png" alt="Maria Alice" />
       </div>
 
       {/* Categorias abaixo da imagem */}
