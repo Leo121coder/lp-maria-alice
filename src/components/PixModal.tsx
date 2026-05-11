@@ -15,6 +15,8 @@ interface PixModalProps {
   isOpen: boolean;
   amount: number;
   onClose: () => void;
+}
+
 export function PixModal({ isOpen, amount, onClose }: PixModalProps) {
   const { status, pixData, createPix, reset } = usePayment();
   const [copied, setCopied] = useState(false);
