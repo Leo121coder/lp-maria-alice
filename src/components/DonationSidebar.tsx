@@ -23,7 +23,7 @@ export function DonationSidebar({ onDonate }: { onDonate: (amount: number) => vo
     <aside className="donation-sidebar">
       {/* Organizador (No topo no mobile, embaixo no desktop via CSS) */}
       <div className="organizer-section">
-        <img src={img('perfil.png')} alt={CONFIG.CAMPAIGN.organizer} className="organizer-avatar" loading="lazy" decoding="async" />
+        <img src="/images/FOTO DE PERFIL.png" alt={CONFIG.CAMPAIGN.organizer} className="organizer-avatar" loading="lazy" decoding="async" />
         <div className="organizer-info">
           <strong>{CONFIG.CAMPAIGN.organizer}</strong>
           <span>Ativo(a) desde {CONFIG.CAMPAIGN.organizerSince}</span>
