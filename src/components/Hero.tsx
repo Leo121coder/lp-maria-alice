@@ -81,11 +81,11 @@ export function Hero() {
                 flex: '0 0 100%', 
                 height: 'auto', 
                 display: 'block', 
-                objectFit: 'contain',    // NÃO recorta a imagem
-                aspectRatio: '1/1',      // Mantém um box quadrado padrão para não ficar pulando
-                maxHeight: '450px',      // Proteção para não ficar gigante no desktop
-                scrollSnapAlign: 'start',// Parada perfeita no touch
-                backgroundColor: '#000'  // Fundo preto atrás da foto para dar contraste estilo galeria
+                objectFit: i === 1 ? 'contain' : 'cover', // Apenas a imagem 2 usa contain
+                aspectRatio: '4/3',      // Padrão retangular/paisagem ideal para banners
+                maxHeight: '500px',      // Proteção para desktop
+                scrollSnapAlign: 'start',
+                backgroundColor: i === 1 ? '#102B3F' : 'transparent' // Fundo azul marinho escuro (da paleta do site) apenas para a imagem 2
               }} 
             />
           ))}
