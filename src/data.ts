@@ -88,9 +88,10 @@ export const DONOR_LIST = [
 ];
 
 export const BUDGET_ITEMS = [
-  { title: 'Exames Oncológicos Particulares', subtitle: '(Ressonâncias, biópsias e exames de alto custo)', value: 'R$ 18.000' },
-  { title: 'Alimentação Especial e Rigorosa', subtitle: '(Dieta específica para suportar a quimioterapia)', value: 'R$ 15.000' },
-  { title: 'Transporte Intermunicipal Seguro', subtitle: '(Deslocamento contínuo de Luziânia para os hospitais)', value: 'R$ 12.000' },
-  { title: 'Medicamentos de Alto Custo', subtitle: '(Suporte imunológico e alívio dos efeitos colaterais)', value: 'R$ 10.000' },
+  { title: 'Medicamentos de Alto Custo', subtitle: '(Suporte imunológico e alívio dos efeitos da quimioterapia)', value: 'R$ 18.000' },
+  { title: 'Exames Oncológicos Particulares', subtitle: '(Ressonâncias, biópsias e exames de urgência)', value: 'R$ 12.000' },
+  { title: 'Transporte Intermunicipal Seguro', subtitle: '(Deslocamento contínuo de Luziânia para os hospitais)', value: 'R$ 10.000' },
+  { title: 'Consultas Médicas Especializadas', subtitle: '(Acompanhamento com oncologista e nutricionista)', value: 'R$ 8.000' },
+  { title: 'Alimentação Especial e Suplementação', subtitle: '(Dieta específica para evitar desnutrição no tratamento)', value: 'R$ 7.000' },
   { title: 'Apoio Emergencial Familiar', subtitle: '(Custos básicos para focarmos 100% no tratamento)', value: 'R$ 5.000' },
 ];
