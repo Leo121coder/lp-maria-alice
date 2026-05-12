@@ -4,10 +4,17 @@
  * Usa o hook usePayment que abstrai o gateway ativo.
  * Mostra: QR Code + código copia-e-cola + countdown + polling automático.
  * Ao abrir, aciona automaticamente a geração do PIX usando dados anônimos (doação rápida).
+ * 
+ * Integrações:
+ * - useRateLimit: Limita a 5 PIX por sessão (anti-abuso)
+ * - getTrackingPayload: Envia UTMs + session com cada PIX
+ * - firePixelEvent: Dispara InitiateCheckout e Purchase no Meta Pixel
  */
 
 import { useState, useRef, useEffect } from 'react';
 import { usePayment } from '../hooks/usePayment';
+import { useRateLimit } from '../hooks/useRateLimit';
+import { getTrackingPayload, firePixelEvent } from '../lib/tracking';
 import type { DonorInfo } from '../gateways';
 import { QRCodeSVG } from 'qrcode.react';
 
@@ -19,26 +26,43 @@ interface PixModalProps {
 
 export function PixModal({ isOpen, amount, onClose }: PixModalProps) {
   const { status, pixData, createPix, reset } = usePayment();
+  const { canGenerate, attemptsLeft, remainingSeconds, recordAttempt } = useRateLimit();
   const [copied, setCopied] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const prevIsOpenRef = useRef(isOpen);
 
   useEffect(() => {
     if (!prevIsOpenRef.current && isOpen && status === 'idle') {
+      // Verificar rate limit antes de gerar
+      if (!canGenerate) return;
+
+      // Registrar tentativa
+      recordAttempt();
+
+      // Disparar InitiateCheckout no Meta Pixel
+      firePixelEvent('InitiateCheckout', {
+        value: amount,
+        currency: 'BRL',
+        content_name: 'Doação Maria Alice',
+      });
+
       const anonymousDonor: DonorInfo = {
         name: 'Anônimo',
         document: '00000000000',
         email: 'anonimo@doacao.com',
         phone: '00000000000',
       };
-      void createPix(amount, anonymousDonor);
+
+      // Enriquece com tracking completo (UTMs, session, device, etc.)
+      const tracking = getTrackingPayload();
+      void createPix(amount, anonymousDonor, tracking);
     }
     if (prevIsOpenRef.current && !isOpen) {
       reset();
       setCopied(false);
     }
     prevIsOpenRef.current = isOpen;
-  }, [isOpen, status, amount, createPix, reset]);
+  }, [isOpen, status, amount, createPix, reset, canGenerate, recordAttempt]);
 
   if (!isOpen && copied) setCopied(false);
 
@@ -64,6 +88,13 @@ export function PixModal({ isOpen, amount, onClose }: PixModalProps) {
   function handleClose() {
     reset();
     onClose();
+  }
+
+  /** Formata segundos para MM:SS */
+  function formatCountdown(seconds: number): string {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   }
 
   if (!isOpen) return null;
@@ -113,6 +144,48 @@ export function PixModal({ isOpen, amount, onClose }: PixModalProps) {
             <span style={{ display: 'block', fontSize: '24px', fontWeight: '800', color: '#24CA68' }}>R$ {amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
           </div>
 
+          {/* ── RATE LIMIT BLOQUEADO ── */}
+          {!canGenerate && status === 'idle' && (
+            <div style={{ padding: '30px 20px', width: '100%', animation: 'fadeIn 0.3s ease' }}>
+              <div style={{ 
+                background: '#fff5f5', 
+                border: '1px solid #ffe0e0', 
+                borderRadius: '12px', 
+                padding: '24px', 
+                display: 'flex', 
+                flexDirection: 'column', 
+                alignItems: 'center', 
+                gap: '12px' 
+              }}>
+                <span style={{ fontSize: '36px' }}>🔒</span>
+                <h3 style={{ fontSize: '16px', fontWeight: '700', color: '#c92a2a', margin: 0 }}>
+                  Limite de segurança atingido
+                </h3>
+                <p style={{ fontSize: '13px', color: '#868e96', margin: 0, lineHeight: '1.5' }}>
+                  Para sua proteção, você atingiu o limite de gerações por sessão.
+                </p>
+                <div style={{ 
+                  background: '#fff', 
+                  borderRadius: '8px', 
+                  padding: '12px 24px', 
+                  border: '1px solid #e9ecef',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}>
+                  <span style={{ fontSize: '11px', fontWeight: '700', color: '#adb5bd', textTransform: 'uppercase' }}>
+                    Disponível novamente em
+                  </span>
+                  <span style={{ fontSize: '28px', fontWeight: '800', color: '#c92a2a', fontFamily: 'monospace' }}>
+                    {formatCountdown(remainingSeconds)}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ── LOADING ── */}
           {status === 'loading' && (
              <div style={{ padding: '40px 0', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                <div style={{ width: '30px', height: '30px', border: '3px solid #f3f3f3', borderTop: '3px solid #24CA68', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
@@ -121,12 +194,14 @@ export function PixModal({ isOpen, amount, onClose }: PixModalProps) {
              </div>
           )}
 
+          {/* ── ERRO ── */}
           {status === 'error' && (
              <div style={{ padding: '20px', background: '#fff5f5', borderRadius: '8px', width: '100%' }}>
                <p style={{ color: '#e03131', fontSize: '14px', fontWeight: '600' }}>⚠️ Falha ao gerar o PIX.</p>
              </div>
           )}
 
+          {/* ── PIX GERADO (QR + Copia e Cola) ── */}
           {(status === 'ready' || status === 'polling') && pixData && (
             <div style={{ width: '100%', animation: 'fadeIn 0.3s ease' }}>
               
@@ -160,6 +235,13 @@ export function PixModal({ isOpen, amount, onClose }: PixModalProps) {
                 </button>
               </div>
 
+              {/* Tentativas restantes (indicador discreto) */}
+              {attemptsLeft > 0 && attemptsLeft < 5 && (
+                <p style={{ fontSize: '11px', color: '#adb5bd', margin: '0 0 16px', textAlign: 'center' }}>
+                  {attemptsLeft} {attemptsLeft === 1 ? 'geração restante' : 'gerações restantes'} nesta sessão
+                </p>
+              )}
+
               {/* Instruções Passo a Passo */}
               <div style={{ textAlign: 'left' }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', marginBottom: '12px' }}>
@@ -179,6 +261,7 @@ export function PixModal({ isOpen, amount, onClose }: PixModalProps) {
             </div>
           )}
 
+          {/* ── PAGAMENTO CONFIRMADO ── */}
           {status === 'paid' && (
             <div style={{ padding: '40px 0', animation: 'fadeIn 0.4s ease' }}>
               <span style={{ fontSize: '50px' }}>🙌</span>

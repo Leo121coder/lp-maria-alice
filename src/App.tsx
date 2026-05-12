@@ -6,9 +6,13 @@ import { CampaignTabs } from './components/CampaignTabs';
 import { Footer } from './components/Footer';
 import { DonateModal } from './components/DonateModal';
 import { PixModal } from './components/PixModal';
+import { useTracking } from './hooks/useTracking';
 import './styles.css';
 
 export default function App() {
+  // Tracking global: captura UTMs da URL + dispara PageView (roda 1x)
+  useTracking();
+
   const [showDonateModal, setShowDonateModal] = useState(false);
   const [showPixModal, setShowPixModal] = useState(false);
   const [pixAmount, setPixAmount] = useState(0);
