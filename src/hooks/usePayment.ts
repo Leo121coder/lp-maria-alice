@@ -12,6 +12,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { createGateway } from '../gateways';
 import { CONFIG } from '../config';
 import type { CreatePixRequest, CreatePixResponse, DonorInfo } from '../gateways';
+import { firePixelEvent } from '../lib/tracking';
 
 /** Configuração do gateway ativo — fonte única: CONFIG.GATEWAY */
 function getActiveGateway() {
@@ -114,12 +115,9 @@ export function usePayment(): UsePaymentReturn {
           clearTimers();
           setStatus('paid');
 
-          // Meta Pixel — Purchase event
-          if (typeof (window as unknown as Record<string, unknown>).fbq === 'function') {
-            (window as unknown as { fbq: (...args: unknown[]) => void }).fbq(
-              'track', 'Purchase', { value: result.amount, currency: 'BRL' }
-            );
-          }
+          // Meta Pixel — Purchase event (desduplicado via saleId)
+          firePixelEvent('Purchase', { value: result.amount, currency: 'BRL' }, result.saleId);
+          
           return;
         }
 

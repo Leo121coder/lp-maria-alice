@@ -79,12 +79,12 @@ export function getSessionId(): string {
     const existing = sessionStorage.getItem(SESSION_ID_KEY);
     if (existing) return existing;
 
-    const newId = generateUUID();
+    const newId = generateId();
     sessionStorage.setItem(SESSION_ID_KEY, newId);
     return newId;
   } catch {
     // sessionStorage indisponível (navegação privada em alguns browsers)
-    return generateUUID();
+    return generateId();
   }
 }
 
@@ -239,15 +239,21 @@ type FbqFunction = (...args: unknown[]) => void;
 /**
  * Dispara evento no Meta Pixel (se carregado).
  * Fail-safe: nunca lança erro se o Pixel não estiver presente.
+ * Suporta eventID para desduplicação rigorosa (RiseDev Standard).
  */
 export function firePixelEvent(
   eventName: string,
-  params?: Record<string, unknown>
+  params?: Record<string, unknown>,
+  eventId?: string
 ): void {
   try {
     const w = window as unknown as { fbq?: FbqFunction };
     if (typeof w.fbq === 'function') {
-      w.fbq('track', eventName, params);
+      if (eventId) {
+        w.fbq('track', eventName, params, { eventID: eventId });
+      } else {
+        w.fbq('track', eventName, params);
+      }
     }
   } catch {
     // Pixel não disponível — silencioso
@@ -257,10 +263,10 @@ export function firePixelEvent(
 // ─── UUID Generator (sem dependência externa) ────────────
 
 /**
- * Gera UUID v4 usando crypto.randomUUID (nativo) com fallback.
- * Evita instalar dependência `uuid` para um uso tão simples.
+ * Gera um ID único (UUID v4) seguro para Event IDs e Session IDs.
+ * Fundamental para desduplicação de eventos no Facebook (CAPI).
  */
-function generateUUID(): string {
+export function generateId(): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
     return crypto.randomUUID();
   }

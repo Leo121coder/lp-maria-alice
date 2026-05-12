@@ -14,7 +14,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { usePayment } from '../hooks/usePayment';
 import { useRateLimit } from '../hooks/useRateLimit';
-import { getTrackingPayload, firePixelEvent } from '../lib/tracking';
+import { getTrackingPayload, firePixelEvent, generateId } from '../lib/tracking';
 import type { DonorInfo } from '../gateways';
 import { QRCodeSVG } from 'qrcode.react';
 
@@ -39,12 +39,15 @@ export function PixModal({ isOpen, amount, onClose }: PixModalProps) {
       // Registrar tentativa
       recordAttempt();
 
-      // Disparar InitiateCheckout no Meta Pixel
+      // Gerar ID determinístico de desduplicação (Padrão RiseDev)
+      const eventId = generateId();
+
+      // Disparar InitiateCheckout no Meta Pixel com eventID
       firePixelEvent('InitiateCheckout', {
         value: amount,
         currency: 'BRL',
         content_name: 'Doação Maria Alice',
-      });
+      }, eventId);
 
       const anonymousDonor: DonorInfo = {
         name: 'Anônimo',
