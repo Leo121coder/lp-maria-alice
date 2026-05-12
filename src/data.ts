@@ -88,10 +88,9 @@ export const DONOR_LIST = [
 ];
 
 export const BUDGET_ITEMS = [
-  { title: 'Cirurgia Oncológica Especializada', subtitle: '(Remoção do tumor no braço)', value: 'R$ 22.000' },
-  { title: 'Sessões de Radioterapia Direcionada', subtitle: '(Controle local da doença)', value: 'R$ 14.000' },
-  { title: 'Quimioterapia e Medicamentos', subtitle: '(Suporte imunológico)', value: 'R$ 10.000' },
-  { title: 'Fisioterapia e Reabilitação Motora', subtitle: '(Recuperação do braço)', value: 'R$ 6.000' },
-  { title: 'Exames de Imagem Constantes', subtitle: '(Ressonâncias e PET-CT)', value: 'R$ 5.000' },
-  { title: 'Transporte e Alimentação Especial', subtitle: '(Logística do tratamento)', value: 'R$ 3.000' },
+  { title: 'Exames Oncológicos Particulares', subtitle: '(Ressonâncias, biópsias e exames de alto custo)', value: 'R$ 18.000' },
+  { title: 'Alimentação Especial e Rigorosa', subtitle: '(Dieta específica para suportar a quimioterapia)', value: 'R$ 15.000' },
+  { title: 'Transporte Intermunicipal Seguro', subtitle: '(Deslocamento contínuo de Luziânia para os hospitais)', value: 'R$ 12.000' },
+  { title: 'Medicamentos de Alto Custo', subtitle: '(Suporte imunológico e alívio dos efeitos colaterais)', value: 'R$ 10.000' },
+  { title: 'Apoio Emergencial Familiar', subtitle: '(Custos básicos para focarmos 100% no tratamento)', value: 'R$ 5.000' },
 ];
