@@ -21,6 +21,13 @@ import type {
   PaymentStatus,
 } from '../types';
 
+/**
+ * Anon key pública do Supabase — necessária para autenticar
+ * chamadas às Edge Functions. É PÚBLICA por design (não é um secret).
+ * Ref: https://supabase.com/docs/guides/functions/auth
+ */
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp0bHR3bWV2dXJ1bHNuZm5jdGpxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MjUyOTcsImV4cCI6MjA5NDEwMTI5N30.Syv0Uq4esSoyIDK2PGR9cH5c9OCzV552atkJdWzB44w';
+
 /** Mapeia os status do SagacePay para o nosso padrão */
 function mapStatus(sagaceStatus: string): PaymentStatus {
   switch (sagaceStatus) {
@@ -44,6 +51,8 @@ export class SagacePayAdapter implements IPaymentGateway {
   async createPix(request: CreatePixRequest): Promise<CreatePixResponse> {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
+      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      'apikey': SUPABASE_ANON_KEY,
     };
 
     // Idempotência (evita cobranças duplicadas por retry de rede)
@@ -117,7 +126,11 @@ export class SagacePayAdapter implements IPaymentGateway {
   async checkStatus(saleId: string): Promise<CheckStatusResponse> {
     const res = await fetch(`${this.proxyUrl}/sales/${saleId}`, {
       method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'apikey': SUPABASE_ANON_KEY,
+      },
     });
 
     if (!res.ok) {
