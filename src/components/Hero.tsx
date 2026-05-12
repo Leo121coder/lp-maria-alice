@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 export function Hero() {
   const images = [
@@ -8,20 +8,66 @@ export function Hero() {
   ];
   
   const [currentIndex, setCurrentIndex] = useState(0);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
+  // Auto-play (sincronizado com o scroll nativo)
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % images.length);
-    }, 4000);
+      if (scrollRef.current) {
+        const nextIndex = (currentIndex + 1) % images.length;
+        const width = scrollRef.current.clientWidth;
+        scrollRef.current.scrollTo({
+          left: nextIndex * width,
+          behavior: 'smooth'
+        });
+      }
+    }, 5000);
     return () => clearInterval(timer);
-  }, [images.length]);
+  }, [currentIndex, images.length]);
+
+  // Sincronizar as bolinhas (dots) quando o usuário arrasta pelo dedo (touch)
+  const handleScroll = () => {
+    if (scrollRef.current) {
+      const scrollLeft = scrollRef.current.scrollLeft;
+      const width = scrollRef.current.clientWidth;
+      const newIndex = Math.round(scrollLeft / width);
+      if (newIndex !== currentIndex) {
+        setCurrentIndex(newIndex);
+      }
+    }
+  };
+
+  const scrollTo = (index: number) => {
+    if (scrollRef.current) {
+      const width = scrollRef.current.clientWidth;
+      scrollRef.current.scrollTo({
+        left: index * width,
+        behavior: 'smooth'
+      });
+      setCurrentIndex(index);
+    }
+  };
 
   return (
     <section className="hero-gallery">
 
-      {/* Galeria / Banner (Carrossel) */}
-      <div className="galeria" style={{ position: 'relative', overflow: 'hidden', borderRadius: '10px' }}>
-        <div style={{ display: 'flex', transition: 'transform 0.5s ease-in-out', transform: `translateX(-${currentIndex * 100}%)` }}>
+      {/* Galeria / Banner (Carrossel Nativo) */}
+      <div className="galeria" style={{ position: 'relative', overflow: 'hidden', borderRadius: '10px', background: '#f4f4f5' }}>
+        <style>{`.hide-scrollbar::-webkit-scrollbar { display: none; }`}</style>
+        
+        <div 
+          ref={scrollRef}
+          onScroll={handleScroll}
+          className="hide-scrollbar"
+          style={{ 
+            display: 'flex', 
+            overflowX: 'auto', 
+            scrollSnapType: 'x mandatory', 
+            scrollbarWidth: 'none', 
+            msOverflowStyle: 'none',
+            scrollBehavior: 'smooth'
+          }}
+        >
           {images.map((src, i) => (
             <img 
               key={i}
@@ -30,7 +76,17 @@ export function Hero() {
               fetchPriority={i === 0 ? "high" : "auto"} 
               loading={i === 0 ? "eager" : "lazy"} 
               decoding={i === 0 ? "sync" : "async"}
-              style={{ width: '100%', flex: '0 0 100%', height: 'auto', display: 'block', objectFit: 'cover', aspectRatio: '4/3' }} 
+              style={{ 
+                width: '100%', 
+                flex: '0 0 100%', 
+                height: 'auto', 
+                display: 'block', 
+                objectFit: 'contain',    // NÃO recorta a imagem
+                aspectRatio: '1/1',      // Mantém um box quadrado padrão para não ficar pulando
+                maxHeight: '450px',      // Proteção para não ficar gigante no desktop
+                scrollSnapAlign: 'start',// Parada perfeita no touch
+                backgroundColor: '#000'  // Fundo preto atrás da foto para dar contraste estilo galeria
+              }} 
             />
           ))}
         </div>
@@ -40,16 +96,16 @@ export function Hero() {
           {images.map((_, i) => (
             <button 
               key={i} 
-              onClick={() => setCurrentIndex(i)}
+              onClick={() => scrollTo(i)}
               style={{ 
                 width: '8px', 
                 height: '8px', 
                 borderRadius: '50%', 
-                background: i === currentIndex ? '#1C9D52' : 'rgba(255, 255, 255, 0.6)', 
+                background: i === currentIndex ? '#24CA68' : 'rgba(255, 255, 255, 0.5)', 
                 border: 'none', 
                 padding: 0, 
                 cursor: 'pointer',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.5)',
                 transition: 'background 0.3s'
               }} 
               aria-label={`Slide ${i + 1}`}
