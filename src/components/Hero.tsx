@@ -61,6 +61,7 @@ export function Hero() {
           className="hide-scrollbar"
           style={{ 
             display: 'flex', 
+            alignItems: 'center', // Centraliza verticalmente se as imagens tiverem alturas diferentes
             overflowX: 'auto', 
             scrollSnapType: 'x mandatory', 
             scrollbarWidth: 'none', 
@@ -80,12 +81,10 @@ export function Hero() {
                 width: '100%', 
                 flex: '0 0 100%', 
                 height: 'auto', 
+                maxHeight: '550px', // Evita que a imagem 2 (vertical) fique gigante
                 display: 'block', 
-                objectFit: i === 1 ? 'contain' : 'cover', // Apenas a imagem 2 usa contain
-                aspectRatio: '4/3',      // Padrão retangular/paisagem ideal para banners
-                maxHeight: '500px',      // Proteção para desktop
-                scrollSnapAlign: 'start',
-                backgroundColor: i === 1 ? '#102B3F' : 'transparent' // Fundo azul marinho escuro (da paleta do site) apenas para a imagem 2
+                objectFit: 'contain', // Garante que NADA seja cortado
+                scrollSnapAlign: 'start'
               }} 
             />
           ))}
