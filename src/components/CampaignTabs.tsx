@@ -42,11 +42,6 @@ export function CampaignTabs({ onDonate }: { onDonate: () => void }) {
           {/* A HISTÓRIA */}
           <h2 className="section-title section-title--red">A HISTÓRIA</h2>
 
-          <div className="video-section">
-            <video controls poster={img('thumb.png')} preload="metadata" playsInline className="campaign-video">
-              <source src={img('video.mp4')} type="video/mp4" />
-            </video>
-          </div>
 
           <p>A história da nossa pequena Maria Alice virou nossa vida de cabeça para baixo. Moramos em Luziânia / GO, e é daqui que estamos travando a maior batalha das nossas vidas.</p>
           <p>Aos 4 anos de idade, e há exatos 4 meses, recebemos o diagnóstico de que ela tem <strong>câncer (Rabdomiossarcoma)</strong> no braço e antebraço esquerdo. Uma notícia que nenhuma família de Luziânia, ou de lugar nenhum, espera receber.</p>
